@@ -2,6 +2,7 @@ apply plugin: 'java'
 apply plugin: 'groovy'
 apply plugin: 'signing'
 apply plugin: 'maven'
+apply plugin: 'jacoco'
 
 group = 'org.seasar.doma'
 version = '2.13.1-SNAPSHOT'
@@ -39,17 +40,13 @@ compileTestJava {
     options.compilerArgs = ['-proc:none']
 }
 
-test {
-    maxHeapSize = '1g'
-}
-
 javadoc {
     options.encoding = encoding
     options.charSet = encoding
     options.docEncoding = encoding
     options.links 'http://docs.oracle.com/javase/jp/8/docs/api/'
     options.use = true
-    exclude '**/internal/**'
+    exclude '**/internal//**'
 }
 
 jar {
@@ -62,6 +59,11 @@ task wrapper(type: Wrapper) {
     gradleVersion = '2.0'
 }
 
+jacoco { 
+    toolVersion = "0.7.6.201602180812"
+    reportsDir = file("$buildDir/customJacocoReportDir")
+}
+
 repositories {
     mavenCentral()
     maven {url 'http://maven.seasar.org/maven2'}
@@ -69,6 +71,33 @@ repositories {
 
 dependencies {
     testCompile 'junit:junit:3.8.2'
+}
+
+test {
+    maxHeapSize = '1g'
+    testLogging {
+          exceptionFormat = 'full'
+          events "passed", "skipped", "failed"
+          afterSuite { desc, result ->
+              // Match the outermost suite
+              if (!desc.parent) { 
+              println "Tests run: ${result.testCount}, Failures: ${result.failedTestCount}, Skipped: ${result.skippedTestCount}"
+              }
+          }
+    }
+    jacoco {
+        append = false
+        destinationFile = file("$buildDir/jacoco/jacocoTest.exec")
+        classDumpFile = file ("$buildDir/jacoco/classpathdumps")
+    }
+}
+
+jacocoTestReport {
+    reports {
+        xml.enabled false
+        csv.enabled false
+        html.destination "${buildDir}/jacocoHtml"
+    }
 }
 
 task sourcesJar (type : Jar) {
