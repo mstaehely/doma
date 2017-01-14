@@ -39,6 +39,15 @@ public class StandardDialectImprovedTest extends TestCase {
 	}
 	
 	/**
+	 * Testing for the single argument ctor requiring an Expression Function.
+	 */
+	public void testCtorExpressionFunctions() {
+		ExpressionFunctions func = new StandardDialect().getExpressionFunctions();
+		StandardDialect dia = new StandardDialect(func);
+		assertTrue(dia instanceof StandardDialect);
+	}
+	
+	/**
 	 * Branch test for null mapping visitor.
 	 */
 	public void testCtorNullMappingVisitor() {
