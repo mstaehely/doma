@@ -11,7 +11,10 @@ package org.seasar.doma.jdbc.dialect;
 
 import org.seasar.doma.DomaNullPointerException;
 import org.seasar.doma.expr.ExpressionFunctions;
+import org.seasar.doma.internal.jdbc.sql.node.AnonymousNode;
+import org.seasar.doma.internal.jdbc.sql.node.ForUpdateClauseNode;
 import org.seasar.doma.jdbc.SelectOptions;
+import org.seasar.doma.jdbc.SelectOptionsAccessor;
 import org.seasar.doma.jdbc.SqlNode;
 import org.seasar.doma.jdbc.dialect.StandardDialect.StandardJdbcMappingVisitor;
 import org.seasar.doma.jdbc.dialect.StandardDialect.StandardSqlLogFormattingVisitor;
@@ -48,6 +51,16 @@ public class StandardDialectImprovedTest extends TestCase {
 	}
 	
 	/**
+	 * Testing for the two argument ctor requiring mapping visitor and log format visitor.
+	 */
+	public void testCtorTwoArgument() {
+		StandardJdbcMappingVisitor map = new StandardJdbcMappingVisitor();
+		StandardSqlLogFormattingVisitor formatter = new StandardSqlLogFormattingVisitor();
+		StandardDialect dia = new StandardDialect(map, formatter);
+		assertTrue(dia instanceof StandardDialect);
+	}
+	
+	/**
 	 * Branch test for null mapping visitor.
 	 */
 	public void testCtorNullMappingVisitor() {
@@ -55,7 +68,7 @@ public class StandardDialectImprovedTest extends TestCase {
 			StandardJdbcMappingVisitor mapper = null;
 			StandardDialect dia = new StandardDialect(mapper);
 		} catch (Exception e) {
-			assertTrue(e instanceof DomaNullPointerException);
+			assertEquals("[DOMA0001] パラメータ[jdbcMappingVisitor]がnullです。", e.getMessage());
 		}
 	}
 	
@@ -67,7 +80,7 @@ public class StandardDialectImprovedTest extends TestCase {
 			StandardSqlLogFormattingVisitor formatter = null;
 			StandardDialect dia = new StandardDialect(formatter);
 		} catch (Exception e) {
-			assertTrue(e instanceof DomaNullPointerException);
+			assertEquals("[DOMA0001] パラメータ[sqlLogFormattingVisitor]がnullです。", e.getMessage());
 		}
 	}
 	
@@ -79,7 +92,7 @@ public class StandardDialectImprovedTest extends TestCase {
 			ExpressionFunctions func = null;
 			StandardDialect dia = new StandardDialect(func);
 		} catch (Exception e) {
-			assertTrue(e instanceof DomaNullPointerException);
+			assertEquals("[DOMA0001] パラメータ[expressionFunctions]がnullです。", e.getMessage());
 		}
 	}
 	
@@ -94,16 +107,52 @@ public class StandardDialectImprovedTest extends TestCase {
 		try {
 			dia.transformSelectSqlNode(node, options);
 		} catch (Exception e) {
-			assertTrue(e instanceof DomaNullPointerException);
+			assertEquals("[DOMA0001] パラメータ[sqlNode]がnullです。", e.getMessage());
 		}
 	}
 	
 	/**
 	 * SQLNode transformSelectSqlNode branch test for null SelectOptions argument.
 	 */
-	public void testTransformSelectSelectOptions() {
-		SqlNode node = null;
+	public void testTransformSelectNullSelectOptions() {
+		// This heirarchy has sqlnode at the top
+		ForUpdateClauseNode node = new ForUpdateClauseNode("test");
 		SelectOptions options = null;
 		StandardDialect dia = new StandardDialect();
+		try {
+			dia.transformSelectSqlNode(node, options);
+		} catch (Exception e) {
+			assertEquals("[DOMA0001] パラメータ[options]がnullです。", e.getMessage());
+		}
+	}
+	
+	/**
+	 * Test the setter for SelectOptions' count field.
+	 */
+	public void testSetCountSize() {
+		SelectOptions options = SelectOptions.get();
+		assertTrue(SelectOptionsAccessor.isCount(options.count()));
+	}
+	
+	/**
+	 * StandardDialect transformSelectSqlNode branch test for having some options selected.
+	 */
+	public void testTransformSelectHasOptions() {
+		SqlNode node = new ForUpdateClauseNode("test");
+		SelectOptions options = SelectOptions.get();
+		StandardDialect dia = new StandardDialect();
+		options.count();
+		assertTrue(dia.transformSelectSqlNode(node, options) instanceof ForUpdateClauseNode);
+	}
+	
+	/**
+	 * StandardDialect transformSelectSqlNode branch test for having offset >= 0
+	 */
+	public void testTransformSelectHasOffset() {
+		SqlNode node = new ForUpdateClauseNode("test");
+		SelectOptions options = SelectOptions.get();
+		options.offset(1);
+		StandardDialect dia = new StandardDialect();
+		assertTrue(dia.transformSelectSqlNode(node, options) instanceof AnonymousNode);
 	}
 }
