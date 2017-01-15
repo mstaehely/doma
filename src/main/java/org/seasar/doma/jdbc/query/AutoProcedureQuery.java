@@ -17,8 +17,15 @@ package org.seasar.doma.jdbc.query;
 
 import static org.seasar.doma.internal.util.AssertionUtil.assertNotNull;
 
+import java.util.ArrayList;
+import java.util.LinkedList;
+
 import org.seasar.doma.internal.jdbc.sql.CallableSqlBuilder;
+import org.seasar.doma.jdbc.CallableSql;
 import org.seasar.doma.jdbc.SqlKind;
+import org.seasar.doma.jdbc.SqlLogType;
+import org.seasar.doma.jdbc.SqlParameter;
+import java.util.function.Function;
 
 /**
  * @author taedium
@@ -26,7 +33,7 @@ import org.seasar.doma.jdbc.SqlKind;
  */
 public class AutoProcedureQuery extends AutoModuleQuery implements
         ProcedureQuery {
-
+	
     @Override
     public void prepare() {
         super.prepare();

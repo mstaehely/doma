@@ -27,6 +27,11 @@ public class MapResultListParameterMeta implements ResultListParameterMeta {
 
     protected final MapCtType mapCtType;
 
+    /**
+     * 
+     * @param mapCtType
+     * @throws AssertionError if mapCtType is null
+     */
     public MapResultListParameterMeta(MapCtType mapCtType) {
         assertNotNull(mapCtType);
         this.mapCtType = mapCtType;

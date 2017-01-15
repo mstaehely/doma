@@ -40,9 +40,20 @@ public class MapListParameter extends
         this.mapKeyNamingType = mapKeyNamingType;
     }
 
+
+    /**
+     * @param query the Query object to create the MapProvider
+     * 
+     * @return the MapProvider created, or null if the query provider
+     * 			does not have a configuration, indicating it was not
+     * 			properly prepared.
+     */
     @Override
     public MapProvider createObjectProvider(Query query) {
-        return new MapProvider(query, mapKeyNamingType);
+    	if (query.getConfig() != null) {
+    		return new MapProvider(query, mapKeyNamingType);
+    	}
+    	return null;
     }
 
 }
